@@ -95,7 +95,7 @@
 	<globalProperty>
 		<property>${project.parent.artifactId}.numberOfRecentBills</property>
 		<description>
-			.Configures the number of recent Bills to be displayed on the Cashier page
+			Configures the number of recent Bills to be displayed on the Cashier page
 		</description>
 		<defaultValue>10</defaultValue>
 	</globalProperty>

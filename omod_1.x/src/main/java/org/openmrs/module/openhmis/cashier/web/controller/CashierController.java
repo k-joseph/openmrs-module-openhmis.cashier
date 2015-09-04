@@ -90,6 +90,7 @@ public class CashierController {
 	public void render(@RequestParam(value = "providerId", required = false) Integer providerId,
 			@RequestParam(value = "returnUrl", required = false) String returnUrl, ModelMap modelMap) {
 		Provider provider;
+		modelMap.addAttribute("numberOfRecentBills", Context.getAdministrationService().getGlobalProperty("openhmis.cashier.numberOfRecentBills"));
 		if (providerId != null) {
 			provider = providerService.getProvider(providerId);
 		} else {

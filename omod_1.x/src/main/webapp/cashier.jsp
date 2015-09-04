@@ -199,4 +199,12 @@
 </form:form>
 </c:if>
 
+<form:form onsubmit="return false;">
+    <h2><spring:message code="openhmis.cashier.recentBills" /></h2>
+    <b class="boxHeader"><spring:message code="openhmis.cashier.recentBills.NMostRecent" arguments="${numberOfRecentBills}"/></b>
+    <div class="box">
+        
+    </div>
+</form:form>
+
 <%@ include file="/WEB-INF/template/footer.jsp" %>
