@@ -32,8 +32,10 @@ import org.openmrs.api.context.Context;
 import org.openmrs.module.jasperreport.JasperReport;
 import org.openmrs.module.jasperreport.JasperReportService;
 import org.openmrs.module.openhmis.cashier.ModuleSettings;
+import org.openmrs.module.openhmis.cashier.api.IBillService;
 import org.openmrs.module.openhmis.cashier.api.ICashPointService;
 import org.openmrs.module.openhmis.cashier.api.ITimesheetService;
+import org.openmrs.module.openhmis.cashier.api.model.Bill;
 import org.openmrs.module.openhmis.cashier.api.model.CashPoint;
 import org.openmrs.module.openhmis.cashier.api.model.Timesheet;
 import org.openmrs.module.openhmis.cashier.web.CashierWebConstants;
@@ -55,6 +57,11 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.context.request.WebRequest;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
 @Controller
 @RequestMapping(value = CashierWebConstants.CASHIER_PAGE)
 public class CashierController {
@@ -65,14 +72,16 @@ public class CashierController {
 	private ProviderService providerService;
 	private JasperReportService jasperService;
 	private AdministrationService adminService;
+	private IBillService iBillService;
 	
 	@Autowired
 	public CashierController(ITimesheetService timesheetService, ICashPointService cashPointService,
-	    ProviderService providerService, AdministrationService adminService) {
+	    ProviderService providerService, AdministrationService adminService, IBillService iBillService) {
 		this.timesheetService = timesheetService;
 		this.cashPointService = cashPointService;
 		this.providerService = providerService;
 		this.adminService = adminService;
+		this.iBillService = iBillService;
 	}
 	
 	@InitBinder
@@ -90,7 +99,18 @@ public class CashierController {
 	public void render(@RequestParam(value = "providerId", required = false) Integer providerId,
 			@RequestParam(value = "returnUrl", required = false) String returnUrl, ModelMap modelMap) {
 		Provider provider;
+		List<Bill> bills = iBillService.getTheMostRecentBills();
+		JsonArray recentBills = new JsonArray();
+		for(int i = 0; i < bills.size(); i++) {
+			Bill bill = bills.get(i);
+			Gson gson = new Gson();//Gson is a Java library that can be used to convert Java Objects into and from their JSON representation. see. https://github.com/google/gson
+			JsonObject json = (new JsonParser()).parse(gson.toJson(bill)).getAsJsonObject();
+			recentBills.add(json);
+		}
+		
 		modelMap.addAttribute("numberOfRecentBills", Context.getAdministrationService().getGlobalProperty("openhmis.cashier.numberOfRecentBills"));
+		modelMap.addAttribute("recentBills", recentBills); 
+		
 		if (providerId != null) {
 			provider = providerService.getProvider(providerId);
 		} else {

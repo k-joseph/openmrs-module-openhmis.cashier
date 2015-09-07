@@ -203,6 +203,9 @@
     <h2><spring:message code="openhmis.cashier.recentBills" /></h2>
     <b class="boxHeader"><spring:message code="openhmis.cashier.recentBills.NMostRecent" arguments="${numberOfRecentBills}"/></b>
     <div class="box">
+    	<script type="text/javascript">
+    		alert(${recentBills});
+    	</script>
         
     </div>
 </form:form>

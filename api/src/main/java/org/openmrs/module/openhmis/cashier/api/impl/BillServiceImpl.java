@@ -18,7 +18,6 @@ import java.security.AccessControlException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
@@ -231,19 +230,26 @@ public class BillServiceImpl extends BaseEntityDataServiceImpl<Bill> implements 
 	/**
 	 * Gets the most Recent Bills to show of the Cashier's page
 	 */
-	public List<Bill> fetchTheMostRecentBills() {
+	@Override
+	public List<Bill> getTheMostRecentBills() {
 		List<Bill> recentBills = new ArrayList<Bill>();
 		List<Bill> allBills = getAll();
 		Integer numberOfRecentBillsToShow = Integer.parseInt(Context.getAdministrationService().getGlobalProperty("openhmis.cashier.numberOfRecentBills"));
 		
+		if(numberOfRecentBillsToShow == null || numberOfRecentBillsToShow <= 0) {
+			numberOfRecentBillsToShow = 0;
+		}
 		Collections.sort(allBills, new Comparator<Bill>() {//sorts allBills to have recent bills fetched first
 		    public int compare(Bill b1, Bill b2) {
 		        return (b1.getDateChanged() == null ? b1.getDateCreated() : b1.getDateChanged()).compareTo((b2.getDateChanged() == null ? b2.getDateCreated() : b2.getDateChanged()));
 		    }
 		});
 		
-		for(int i = 0; i < numberOfRecentBillsToShow; i++){
-			recentBills.add(allBills.get(i));
+		for(int i = 0; i < ((allBills.size() < numberOfRecentBillsToShow) ? allBills.size() :numberOfRecentBillsToShow); i++){
+				Bill bill = allBills.get(i);
+				
+				//TODO must this look out for only bills that belong to the currently logged in user
+				recentBills.add(bill);
 		}
 		return recentBills;
 	}
