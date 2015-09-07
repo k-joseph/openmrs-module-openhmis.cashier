@@ -35,7 +35,6 @@ import org.openmrs.module.openhmis.cashier.ModuleSettings;
 import org.openmrs.module.openhmis.cashier.api.IBillService;
 import org.openmrs.module.openhmis.cashier.api.ICashPointService;
 import org.openmrs.module.openhmis.cashier.api.ITimesheetService;
-import org.openmrs.module.openhmis.cashier.api.model.Bill;
 import org.openmrs.module.openhmis.cashier.api.model.CashPoint;
 import org.openmrs.module.openhmis.cashier.api.model.Timesheet;
 import org.openmrs.module.openhmis.cashier.web.CashierWebConstants;
@@ -56,11 +55,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.context.request.WebRequest;
-
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 
 @Controller
 @RequestMapping(value = CashierWebConstants.CASHIER_PAGE)
@@ -99,17 +93,18 @@ public class CashierController {
 	public void render(@RequestParam(value = "providerId", required = false) Integer providerId,
 			@RequestParam(value = "returnUrl", required = false) String returnUrl, ModelMap modelMap) {
 		Provider provider;
-		List<Bill> bills = iBillService.getTheMostRecentBills();
-		JsonArray recentBills = new JsonArray();
+		/*List<Bill> bills = iBillService.getTheMostRecentBills();
+		JSONArray recentBills = new JSONArray();
 		for(int i = 0; i < bills.size(); i++) {
 			Bill bill = bills.get(i);
-			Gson gson = new Gson();//Gson is a Java library that can be used to convert Java Objects into and from their JSON representation. see. https://github.com/google/gson
-			JsonObject json = (new JsonParser()).parse(gson.toJson(bill)).getAsJsonObject();
+			JSONObject json = new JSONObject();
+			
+			generateBillJSON(bill, json);
 			recentBills.add(json);
-		}
+		}*/
 		
 		modelMap.addAttribute("numberOfRecentBills", Context.getAdministrationService().getGlobalProperty("openhmis.cashier.numberOfRecentBills"));
-		modelMap.addAttribute("recentBills", recentBills); 
+		//modelMap.addAttribute("recentBills", recentBills); 
 		
 		if (providerId != null) {
 			provider = providerService.getProvider(providerId);
@@ -156,7 +151,51 @@ public class CashierController {
 		
 		addRenderAttributes(modelMap, timesheet, provider, returnTo);
 	}
-	
+
+	/*private void generateBillJSON(Bill bill, JSONObject json) {
+	    JSONArray paymentsJson = new JSONArray();
+	    JSONArray adjustedByJson = new JSONArray();
+	    JSONArray itemsJson = new JSONArray();
+	    
+	    for(Payment p: bill.getPayments()) {
+	    	JSONObject json2 = new JSONObject();
+	    	
+	    	json2.put("amount", p.getAmount());
+	    	json2.put("amountTendered", p.getAmountTendered());
+	    	paymentsJson.add(json2);
+	    }
+	    for(Bill adjustedBill : bill.getAdjustedBy()) {
+	    	JSONObject json3 = new JSONObject();
+	    	
+	    	generateBillJSON(adjustedBill, json3);
+	    	adjustedByJson.add(json3);
+	    }
+	    for(BillLineItem lineItem : bill.getLineItems()) {
+	    	JSONObject json4 = new JSONObject();
+	    	
+	    	json4.put("itemPrice", lineItem.getPrice());
+	    	json4.put("itemTotal", lineItem.getTotal());
+	    	json4.put("itemQuantity", lineItem.getQuantity());
+	    	json4.put("itemName", lineItem.getItem().getName() == null ? lineItem.getItem().getConcept().getName() : lineItem.getItem().getName());
+	    	itemsJson.add(json4);
+	    }
+	    json.put("total", bill.getTotal());
+	    json.put("amountPaid", bill.getAmountPaid());
+	    json.put("cashier", bill.getCashier().getName());
+	    json.put("cashPoint", bill.getCashPoint());
+	    json.put("creator", bill.getCreator().getUsername() == null ? bill.getCreator().getSystemId() : bill.getCreator().getUsername());
+	    json.put("dateTime", bill.getDateChanged() == null ? bill.getDateCreated().getTime() : bill.getDateChanged().getTime());
+	    json.put("patient", bill.getPatient().getNames());
+	    json.put("receiptNumber", bill.getReceiptNumber());
+	    json.put("payments", paymentsJson);
+	    json.put("status", bill.getStatus());
+	    json.put("total", bill.getTotal());
+	    json.put("totalPayments", bill.getTotalPayments());
+	    json.put("adjustmentReason", bill.getAdjustmentReason());
+	    json.put("adjustedBy", adjustedByJson);
+	    json.put("items", itemsJson);
+    }
+	*/
 	@RequestMapping(method = RequestMethod.POST)
 	public String post(Timesheet timesheet, Errors errors, WebRequest request, ModelMap modelMap) {
 		String returnUrl = request.getParameter("returnUrl");
